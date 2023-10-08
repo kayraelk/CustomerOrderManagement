@@ -34,11 +34,10 @@ namespace DataAccess.Concrete.EntityFramework
 
         public Product Get(Expression<Func<Product, bool>> filter)
         {
-            //using (NorthwindContext context = new NorthwindContext())
-            //{
-            //    //return context.Set<Product>().Where(filter).ToList();
-            //}
-            return null;
+            using (NorthwindContext context = new NorthwindContext())
+            {
+                return context.Set<Product>().SingleOrDefault(filter);
+            }
         }
 
         public List<Product> GetAll(Expression<Func<Product, bool>> filter = null)
