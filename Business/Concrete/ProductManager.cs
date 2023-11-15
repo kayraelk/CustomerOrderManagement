@@ -1,4 +1,6 @@
 ﻿using Business.Abstract;
+using Business.Constants;
+using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
 using Entities.DTOs;
@@ -20,24 +22,49 @@ namespace Business.Concrete
             _productDal = productDal;
         }
 
-        public List<Product> GetAll()
+        public IDataResult<List<Product>> GetAll()
         {
-            return _productDal.GetAll();
+            if(DateTime.Now.Hour == 18)
+            {
+                return new ErrorDataResult<List<Product>>(Messages.MaintenanceTime);
+            }
+            return new SuccessDataResult<List<Product>>(_productDal.GetAll(), Messages.ProductsListed);
         }
 
-        public List<Product> GetAllByCategoryId(int id)
+        public IDataResult<List<Product>> GetAllByCategoryId(int id)
         {
-            return _productDal.GetAll(p => p.CategoryId == id);
+            return new SuccessDataResult<List<Product>>(_productDal.GetAll(p => p.CategoryId == id),Messages.ProductsListed);
         }
 
-        public List<Product> GetByUnitPrice(decimal min, decimal max)
+        public IDataResult<Product> GetById(int productId)
         {
-            return _productDal.GetAll(p => p.UnitPrice >= min && p.UnitPrice <= max);
+            return new SuccessDataResult<Product>(_productDal.Get(x => x.ProductId == productId));
         }
 
-        public List<ProductDto> GetProducts()
+        public IDataResult<List<Product>> GetByUnitPrice(decimal min, decimal max)
         {
-            return _productDal.GetProducts();
+            return new SuccessDataResult<List<Product>>(_productDal.GetAll(p => p.UnitPrice >= min && p.UnitPrice <= max));
+        }
+
+        public IDataResult<List<ProductDto>> GetProducts()
+        {
+            if (DateTime.Now.Hour == 13)
+            {
+                return new ErrorDataResult<List<ProductDto>>(Messages.MaintenanceTime);
+            }
+            return new SuccessDataResult<List<ProductDto>>(_productDal.GetProducts());
+        }
+
+        public IResult Add(Product product)
+        {
+            if(product.ProductName.Length < 2)
+            {
+                //magic strings
+                return new ErrorResult(Messages.ProductNameInvalid);
+            }
+
+            _productDal.Add(product);
+            return new SucccessResult(Messages.ProductAdded);
         }
     }
 }
